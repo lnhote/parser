@@ -7444,13 +7444,16 @@ CommaOpt:
  *  https://dev.mysql.com/doc/refman/5.7/en/account-management-sql.html
  ************************************************************************************/
 CreateUserStmt:
-	"CREATE" "USER" IfNotExists UserSpecList
+	"CREATE" "USER" IfNotExists UserSpecList TLSOption PasswordOption LockOption
 	{
  		// See https://dev.mysql.com/doc/refman/5.7/en/create-user.html
 		$$ = &ast.CreateUserStmt{
 			IsCreateRole: false,
 			IfNotExists: $3.(bool),
 			Specs: $4.([]*ast.UserSpec),
+			TLSOption: $5.([]*ast.TLSOption),
+			PasswordOption: $6.([]*ast.PasswordOption),
+			IsLock: $7.(bool),
 		}
 	}
 
@@ -7541,6 +7544,93 @@ AuthOption:
 		$$ = &ast.AuthOption{
 			HashString: $4.(string),
 		}
+	}
+TLSOption:
+	{
+		$$ = nil
+	}
+|	"REQUIRE NONE"
+	{
+		$$ = nil
+	}
+
+PasswordOption:
+	{
+		$$ = nil
+	}
+|	"PASSWORD" "EXPIRE"
+	{
+		$$ = &ast.PasswordOption{
+			ExpireType: "DEFAULT",
+		}
+	}
+|	"PASSWORD" "EXPIRE" "DEFAULT"
+	{
+		$$ = &ast.PasswordOption{
+			ExpireType: "DEFAULT",
+		}
+	}
+|	"PASSWORD" "EXPIRE" "NEVER"
+	{
+		$$ = &ast.PasswordOption{
+			ExpireType: "NEVER",
+		}
+	}
+|	"PASSWORD" "EXPIRE" "INTERVAL" ExpireInterval "DAY"
+	{
+		$$ = &ast.PasswordOption{
+			ExpireType: "INTERVAL",
+			ExpireInterval: $4.(int)
+		}
+	}
+|	"PASSWORD" "HISTORY" "DEFAULT"
+	{
+		$$ = &ast.PasswordOption{
+			HistoryValue: 0,
+		}
+	}
+|	"PASSWORD" "HISTORY" HistoryValue "DAY"
+	{
+		$$ = &ast.PasswordOption{
+			HistoryValue: $3.(int),
+		}
+	}
+|	"PASSWORD" "REUSE" "INTERVAL" "DEFAULT"
+	{
+		$$ = &ast.PasswordOption{
+			ReuseInterval: 0,
+		}
+	}
+|	"PASSWORD" "REUSE" "INTERVAL" ReuseInterval "DAY"
+	{
+		$$ = &ast.PasswordOption{
+			ReuseInterval: $4.(int),
+		}
+	}
+|	"PASSWORD" "REQUIRE" "CURRENT"
+	{
+		$$ = &ast.PasswordOption{
+			CurrentType: "DEFAULT",
+		}
+	}
+|	"PASSWORD" "REQUIRE" "CURRENT" "DEFAULT"
+	{
+		$$ = &ast.PasswordOption{
+			CurrentType: "DEFAULT",
+		}
+	}
+
+LockOption:
+	{
+		$$ = false
+	}
+|	"ACCOUNT UNLOCK"
+	{
+		$$ = false
+	}
+|	"ACCOUNT LOCK"
+	{
+		$$ = true
 	}
 
 HashString:

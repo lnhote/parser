@@ -93,6 +93,32 @@ type AuthOption struct {
 	// TODO: support auth_plugin
 }
 
+// TLSType is the type for create user statement.
+// see https://dev.mysql.com/doc/refman/8.0/en/create-user.html
+type TLSType int
+
+const (
+	TLSTypeNone TLSType = iota
+	TLSTypeSSL
+	TLSTypeX509
+	TLSTypeCIPHER
+	TLSTypeISSUER
+	TLSTypeSUBJECT
+)
+
+type TLSOption struct {
+	Type TLSType
+}
+
+// PasswordOption is the options for create user statement.
+type PasswordOption struct {
+	ExpireType string
+	ExpireInterval int
+	HistoryValue int
+	ReuseInterval int
+	CurrentType string
+}
+
 // Restore implements Node interface.
 func (n *AuthOption) Restore(ctx *RestoreCtx) error {
 	ctx.WriteKeyWord("IDENTIFIED BY ")
@@ -783,6 +809,9 @@ type CreateUserStmt struct {
 	IsCreateRole bool
 	IfNotExists  bool
 	Specs        []*UserSpec
+	TLSOpt *TLSOption
+	PasswordOpt *PasswordOption
+	IsLock bool
 }
 
 // Restore implements Node interface.
