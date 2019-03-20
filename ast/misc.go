@@ -108,14 +108,17 @@ const (
 
 type TLSOption struct {
 	Type TLSType
+	Cipher string
+	Issuer string
+	Subject string
 }
 
 // PasswordOption is the options for create user statement.
 type PasswordOption struct {
 	ExpireType string
-	ExpireInterval int
-	HistoryValue int
-	ReuseInterval int
+	ExpireInterval uint64
+	HistoryValue uint64
+	ReuseInterval uint64
 	CurrentType string
 }
 

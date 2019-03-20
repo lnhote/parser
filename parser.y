@@ -65,6 +65,7 @@ import (
 	odbcTimestampType		"ts"
 
 	/* The following tokens belong to ReservedKeyword. */
+	account		"ACCOUNT"
 	add			"ADD"
 	all 			"ALL"
 	alter			"ALTER"
@@ -84,6 +85,7 @@ import (
 	character		"CHARACTER"
 	charType		"CHAR"
 	check 			"CHECK"
+	cipher 			"CIPHER"
 	collate 		"COLLATE"
 	column			"COLUMN"
 	constraint		"CONSTRAINT"
@@ -147,6 +149,7 @@ import (
 	interval		"INTERVAL"
 	into			"INTO"
 	is			"IS"
+	issuer			"ISSUER"
 	insert			"INSERT"
 	intType			"INT"
 	int1Type		"INT1"
@@ -318,6 +321,7 @@ import (
 	escape 		"ESCAPE"
 	exclusive       "EXCLUSIVE"
 	execute		"EXECUTE"
+	expire		"EXPIRE"
 	fields		"FIELDS"
 	first		"FIRST"
 	fixed		"FIXED"
@@ -328,6 +332,7 @@ import (
 	function	"FUNCTION"
 	grants		"GRANTS"
 	hash		"HASH"
+	history		"HISTORY"
 	hour		"HOUR"
 	identified	"IDENTIFIED"
 	isolation	"ISOLATION"
@@ -354,6 +359,7 @@ import (
 	minRows		"MIN_ROWS"
 	names		"NAMES"
 	national	"NATIONAL"
+	never		"NEVER"
 	no		"NO"
 	none		"NONE"
 	nulls		"NULLS"
@@ -377,8 +383,10 @@ import (
 	redundant	"REDUNDANT"
 	reload		"RELOAD"
 	repeatable	"REPEATABLE"
-	respect		"RESPECT"
+	require		"REQUIRE"
 	replication	"REPLICATION"
+	respect		"RESPECT"
+	reuse		"REUSE"
 	reverse		"REVERSE"
 	role		"ROLE"
 	rollback	"ROLLBACK"
@@ -398,9 +406,11 @@ import (
 	snapshot	"SNAPSHOT"
 	sqlCache	"SQL_CACHE"
 	sqlNoCache	"SQL_NO_CACHE"
+	SSL	"SSL"
 	start		"START"
 	statsPersistent	"STATS_PERSISTENT"
 	status		"STATUS"
+	subject		"SUBJECT"
 	subpartition	"SUBPARTITION"
 	subpartitions	"SUBPARTITIONS"
 	super		"SUPER"
@@ -426,6 +436,7 @@ import (
 	value		"VALUE"
 	variables	"VARIABLES"
 	view		"VIEW"
+	x509		"X509"
 	binding		"BINDING"
 	bindings	"BINDINGS"
 	warnings	"WARNINGS"
@@ -730,6 +741,7 @@ import (
 	LinesTerminated			"Lines terminated by"
 	LocalOpt			"Local opt"
 	LockClause         		"Alter table lock clause"
+	LockOption			"create user lock option"
 	MaxNumBuckets			"Max number of buckets"
 	NumLiteral			"Num/Int/Float/Decimal Literal"
 	NoWriteToBinLogAliasOpt 	"NO_WRITE_TO_BINLOG alias LOCAL or empty"
@@ -756,6 +768,7 @@ import (
 	PartDefOptionList		"PartDefOption list"
 	PartDefOption			"COMMENT [=] xxx | TABLESPACE [=] tablespace_name | ENGINE [=] xxx"
 	PasswordOpt			"Password option"
+	PasswordOption			"create user password option"
 	ColumnPosition			"Column position [First|After ColumnName]"
 	PrepareSQL			"Prepare statement sql string"
 	PriorityOpt			"Statement priority option"
@@ -817,7 +830,7 @@ import (
 	TableRefs 			"table references"
 	TableToTable 			"rename table to table"
 	TableToTableList 		"rename table to table by list"
-
+	TLSOption			"TLS option"
 	TransactionChar		"Transaction characteristic"
 	TransactionChars	"Transaction characteristic list"
 	TrimDirection		"Trim string direction"
@@ -7451,8 +7464,8 @@ CreateUserStmt:
 			IsCreateRole: false,
 			IfNotExists: $3.(bool),
 			Specs: $4.([]*ast.UserSpec),
-			TLSOption: $5.([]*ast.TLSOption),
-			PasswordOption: $6.([]*ast.PasswordOption),
+			TLSOption: $5.(*ast.TLSOption),
+			PasswordOption: $6.(*ast.PasswordOption),
 			IsLock: $7.(bool),
 		}
 	}
@@ -7545,13 +7558,52 @@ AuthOption:
 			HashString: $4.(string),
 		}
 	}
+
 TLSOption:
+	"REQUIRE" "NONE"
 	{
-		$$ = nil
+		x := types.NewFieldType(ast.TLSTypeNone)
+		$$ = &ast.TLSOption{
+			Type: x,
+		}
 	}
-|	"REQUIRE NONE"
+|	"REQUIRE" "SSL"
 	{
-		$$ = nil
+		x := types.NewFieldType(ast.TLSTypeSSL)
+		$$ = &ast.TLSOption{
+			Type: x,
+		}
+	}
+|	"REQUIRE" "X509"
+	{
+		x := types.NewFieldType(ast.TLSTypeX509)
+		$$ = &ast.TLSOption{
+			Type: x,
+		}
+	}
+|	"REQUIRE" "CIPHER" stringLit
+	{
+		x := types.NewFieldType(ast.TLSTypeCIPHER)
+		$$ = &ast.TLSOption{
+			Type: x,
+			Cipher: $3,
+		}
+	}
+|	"REQUIRE" "ISSUER" stringLit
+	{
+		x := types.NewFieldType(ast.TLSTypeISSUER)
+		$$ = &ast.TLSOption{
+			Type: x,
+			Issuer: $3,
+		}
+	}
+|	"REQUIRE" "SUBJECT" stringLit
+	{
+		x := types.NewFieldType(ast.TLSTypeSUBJECT)
+		$$ = &ast.TLSOption{
+			Type: x,
+			Subject: $3,
+		}
 	}
 
 PasswordOption:
@@ -7576,11 +7628,11 @@ PasswordOption:
 			ExpireType: "NEVER",
 		}
 	}
-|	"PASSWORD" "EXPIRE" "INTERVAL" ExpireInterval "DAY"
+|	"PASSWORD" "EXPIRE" "INTERVAL" NUM "DAY"
 	{
 		$$ = &ast.PasswordOption{
 			ExpireType: "INTERVAL",
-			ExpireInterval: $4.(int)
+			ExpireInterval: getUint64FromNUM($4),
 		}
 	}
 |	"PASSWORD" "HISTORY" "DEFAULT"
@@ -7589,10 +7641,10 @@ PasswordOption:
 			HistoryValue: 0,
 		}
 	}
-|	"PASSWORD" "HISTORY" HistoryValue "DAY"
+|	"PASSWORD" "HISTORY" NUM "DAY"
 	{
 		$$ = &ast.PasswordOption{
-			HistoryValue: $3.(int),
+			HistoryValue: getUint64FromNUM($3),
 		}
 	}
 |	"PASSWORD" "REUSE" "INTERVAL" "DEFAULT"
@@ -7601,10 +7653,10 @@ PasswordOption:
 			ReuseInterval: 0,
 		}
 	}
-|	"PASSWORD" "REUSE" "INTERVAL" ReuseInterval "DAY"
+|	"PASSWORD" "REUSE" "INTERVAL" NUM "DAY"
 	{
 		$$ = &ast.PasswordOption{
-			ReuseInterval: $4.(int),
+			ReuseInterval: getUint64FromNUM($4),
 		}
 	}
 |	"PASSWORD" "REQUIRE" "CURRENT"
@@ -7624,11 +7676,11 @@ LockOption:
 	{
 		$$ = false
 	}
-|	"ACCOUNT UNLOCK"
+|	"ACCOUNT" "UNLOCK"
 	{
 		$$ = false
 	}
-|	"ACCOUNT LOCK"
+|	"ACCOUNT" "LOCK"
 	{
 		$$ = true
 	}
