@@ -7464,8 +7464,8 @@ CreateUserStmt:
 			IsCreateRole: false,
 			IfNotExists: $3.(bool),
 			Specs: $4.([]*ast.UserSpec),
-			TLSOption: $5.(*ast.TLSOption),
-			PasswordOption: $6.(*ast.PasswordOption),
+			TLSOpt: $5.(*ast.TLSOption),
+			PasswordOpt: $6.(*ast.PasswordOption),
 			IsLock: $7.(bool),
 		}
 	}
@@ -7562,46 +7562,40 @@ AuthOption:
 TLSOption:
 	"REQUIRE" "NONE"
 	{
-		x := types.NewFieldType(ast.TLSTypeNone)
 		$$ = &ast.TLSOption{
-			Type: x,
+			Type: ast.TLSTypeNone,
 		}
 	}
 |	"REQUIRE" "SSL"
 	{
-		x := types.NewFieldType(ast.TLSTypeSSL)
 		$$ = &ast.TLSOption{
-			Type: x,
+			Type: ast.TLSTypeSSL,
 		}
 	}
 |	"REQUIRE" "X509"
 	{
-		x := types.NewFieldType(ast.TLSTypeX509)
 		$$ = &ast.TLSOption{
-			Type: x,
+			Type: ast.TLSTypeX509,
 		}
 	}
 |	"REQUIRE" "CIPHER" stringLit
 	{
-		x := types.NewFieldType(ast.TLSTypeCIPHER)
 		$$ = &ast.TLSOption{
-			Type: x,
+			Type: ast.TLSTypeCIPHER,
 			Cipher: $3,
 		}
 	}
 |	"REQUIRE" "ISSUER" stringLit
 	{
-		x := types.NewFieldType(ast.TLSTypeISSUER)
 		$$ = &ast.TLSOption{
-			Type: x,
+			Type: ast.TLSTypeISSUER,
 			Issuer: $3,
 		}
 	}
 |	"REQUIRE" "SUBJECT" stringLit
 	{
-		x := types.NewFieldType(ast.TLSTypeSUBJECT)
 		$$ = &ast.TLSOption{
-			Type: x,
+			Type: ast.TLSTypeSUBJECT,
 			Subject: $3,
 		}
 	}

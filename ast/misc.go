@@ -107,19 +107,19 @@ const (
 )
 
 type TLSOption struct {
-	Type TLSType
-	Cipher string
-	Issuer string
+	Type    TLSType
+	Cipher  string
+	Issuer  string
 	Subject string
 }
 
 // PasswordOption is the options for create user statement.
 type PasswordOption struct {
-	ExpireType string
+	ExpireType     string
 	ExpireInterval uint64
-	HistoryValue uint64
-	ReuseInterval uint64
-	CurrentType string
+	HistoryValue   uint64
+	ReuseInterval  uint64
+	CurrentType    string
 }
 
 // Restore implements Node interface.
@@ -812,9 +812,9 @@ type CreateUserStmt struct {
 	IsCreateRole bool
 	IfNotExists  bool
 	Specs        []*UserSpec
-	TLSOpt *TLSOption
-	PasswordOpt *PasswordOption
-	IsLock bool
+	TLSOpt       *TLSOption
+	PasswordOpt  *PasswordOption
+	IsLock       bool
 }
 
 // Restore implements Node interface.

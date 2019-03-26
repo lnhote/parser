@@ -12771,12 +12771,12 @@ yynewstate:
 		{
 			// See https://dev.mysql.com/doc/refman/5.7/en/create-user.html
 			parser.yyVAL.statement = &ast.CreateUserStmt{
-				IsCreateRole:   false,
-				IfNotExists:    yyS[yypt-4].item.(bool),
-				Specs:          yyS[yypt-3].item.([]*ast.UserSpec),
-				TLSOption:      yyS[yypt-2].item.(*ast.TLSOption),
-				PasswordOption: yyS[yypt-1].item.(*ast.PasswordOption),
-				IsLock:         yyS[yypt-0].item.(bool),
+				IsCreateRole: false,
+				IfNotExists:  yyS[yypt-4].item.(bool),
+				Specs:        yyS[yypt-3].item.([]*ast.UserSpec),
+				TLSOpt:       yyS[yypt-2].item.(*ast.TLSOption),
+				PasswordOpt:  yyS[yypt-1].item.(*ast.PasswordOption),
+				IsLock:       yyS[yypt-0].item.(bool),
 			}
 		}
 	case 1403:
@@ -12860,46 +12860,40 @@ yynewstate:
 		}
 	case 1415:
 		{
-			x := types.NewFieldType(ast.TLSTypeNone)
 			parser.yyVAL.item = &ast.TLSOption{
-				Type: x,
+				Type: ast.TLSTypeNone,
 			}
 		}
 	case 1416:
 		{
-			x := types.NewFieldType(ast.TLSTypeSSL)
 			parser.yyVAL.item = &ast.TLSOption{
-				Type: x,
+				Type: ast.TLSTypeSSL,
 			}
 		}
 	case 1417:
 		{
-			x := types.NewFieldType(ast.TLSTypeX509)
 			parser.yyVAL.item = &ast.TLSOption{
-				Type: x,
+				Type: ast.TLSTypeX509,
 			}
 		}
 	case 1418:
 		{
-			x := types.NewFieldType(ast.TLSTypeCIPHER)
 			parser.yyVAL.item = &ast.TLSOption{
-				Type:   x,
+				Type:   ast.TLSTypeCIPHER,
 				Cipher: yyS[yypt-0].ident,
 			}
 		}
 	case 1419:
 		{
-			x := types.NewFieldType(ast.TLSTypeISSUER)
 			parser.yyVAL.item = &ast.TLSOption{
-				Type:   x,
+				Type:   ast.TLSTypeISSUER,
 				Issuer: yyS[yypt-0].ident,
 			}
 		}
 	case 1420:
 		{
-			x := types.NewFieldType(ast.TLSTypeSUBJECT)
 			parser.yyVAL.item = &ast.TLSOption{
-				Type:    x,
+				Type:    ast.TLSTypeSUBJECT,
 				Subject: yyS[yypt-0].ident,
 			}
 		}
